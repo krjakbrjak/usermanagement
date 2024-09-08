@@ -14,5 +14,14 @@ type Agent struct {
 }
 
 func (s *Agent) GetPasswordPolicy(ctx context.Context, req *empty.Empty) (*generated.PasswordPolicyResponse, error) {
-	return &generated.PasswordPolicyResponse{}, nil
+	policy := &generated.PasswordPolicyResponse{}
+	installedErr := CheckPAMPwquality()
+	if installedErr != nil {
+		return nil, installedErr
+	}
+	parseErr := ParsePAMConfig("/etc/pam.d/common-password", policy)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	return policy, nil
 }
